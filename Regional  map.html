@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0;
+            padding: 20px;
+            background: #fff;
+        }
+        #map {
+            width: 600px;
+            height: 337px;
+            position: relative;
+        }
+        svg { 
+            width: 600px;
+            height: 337px;
+            background: #fff;
+        }
+        .annotation {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .message-box {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0);
+            padding: 5px;
+            z-index: 10;
+            font-size: 13px;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+        .custom-box {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .custom-box select, .custom-box textarea, .custom-box button, .custom-box input {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .custom-box textarea {
+            width: 200px;
+            height: 30px;
+        }
+        #heading-input {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="custom-box">
+        <input type="text" id="heading-input" placeholder="Enter Map Heading">
+        <select id="type-select">
+            <option value="region">Region</option>
+            <option value="country">Country</option>
+        </select>
+        <select id="region-select" multiple>
+            <option value="North America">North America</option>
+            <option value="Europe">Europe</option>
+            <option value="APAC">APAC</option>
+            <option value="LATAM">LATAM</option>
+            <option value="MEA">MEA</option>
+        </select>
+        <input type="text" id="country-search" placeholder="Search Country" style="display: none;">
+        <select id="country-select" multiple style="display: none;">
+            <option value="">Select Country</option>
+            <option value="Afghanistan">Afghanistan (+93)</option>
+            <option value="Albania">Albania (+355)</option>
+            <!-- Add all countries here -->
+        </select>
+        <div id="custom-text-boxes"></div>
+        <button id="apply-btn">Apply</button>
+        <button id="download-btn">Download Map as WebP</button>
+    </div>
+    <script>
+        const width = 600;
+        const height = 337;
+
+        const projection = d3.geoMercator()
+            .scale(67)
+            .translate([width / 2, height / 1.5]);
+
+        const path = d3.geoPath().projection(projection);
+
+        const svg = d3.select("#map").append("svg");
+
+        svg.style("background-color", "#fff"); // Set background color
+
+        const g = svg.append("g");
+
+        // Add heading text to SVG
+        const heading = svg.append("text")
+            .attr("id", "map-heading")
+            .attr("x", width / 2)
+            .attr("y", 18) // Move slightly higher
+            .attr("text-anchor", "middle")
+            .attr("fill", "#14509E")
+            .style("font-size", "17px")
+            .style("font-weight", "600")
+            .style("font-family", "'Poppins', sans-serif")
+            .text("Metaverse Market");
+
+        const source = svg.append("text")
+            .attr("x", 10) // Move left for visibility
+            .attr("y", height - 10) // Move up slightly
+            .attr("text-anchor", "start")
+            .style("font-size", "12px")
+            .style("font-family", "'Poppins', sans-serif")
+            .style("fill", "#5c73a0")
+            .style("font-weight", "600")
+            .text("Source: P&S Intelligence");
+
+        const regions = {
+            "North America": { coordinates: [-100, 40], color: "#20a7ad" },
+            "Europe": { coordinates: [10, 50], color: "#14509E" },
+            "APAC": { coordinates: [100, 20], color: "#337CCF" },
+            "LATAM": { coordinates: [-60, -10], color: "#172d55" },
+            "MEA": { coordinates: [30, 10], color: "#164863" },
+        };
+
+        const countries = {
+            "Afghanistan": { coordinates: [67.709953, 33.93911], color: "red" },
+            "Albania": { coordinates: [20.168331, 41.153332], color: "blue" },
+            <!-- Add all countries here -->
+        };
+
+        const selectedData = {};
+
+        d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(world => {
+            const countriesTopo = topojson.feature(world, world.objects.countries).features;
+
+            g.selectAll("path")
+                .data(countriesTopo)
+                .enter().append("path")
+                .attr("d", path)
+                .attr("class", "country")
+                .style("fill", "#ccc")
+                .style("stroke", "#ccc");
+
+            document.getElementById("apply-btn").addEventListener("click", () => {
+                const selectedType = document.getElementById("type-select").value;
+                const selectedOptions = selectedType === "region" ?
+                    Array.from(document.getElementById("region-select").selectedOptions) :
+                    Array.from(document.getElementById("country-select").selectedOptions);
+
+                const selectedNames = selectedOptions.map(option => option.value);
+
+                selectedNames.forEach(name => {
+                    const textarea = document.getElementById(`custom-text-${name}`);
+                    if (textarea) {
+                        selectedData[name] = textarea.value;
+                    }
+                });
+
+                // Reset map fill colors
+                g.selectAll("path").style("fill", "#ccc");
+                svg.selectAll(".message-box").remove();
+
+                selectedNames.forEach((name, index) => {
+                    const { coordinates, color } = selectedType === "region" ? regions[name] : countries[name];
+                    const [x, y] = projection(coordinates);
+
+                    const marker = g.append("circle")
+                        .attr("cx", x)
+                        .attr("cy", y)
+                        .attr("r", 5)
+                        .style("fill", color);
+
+                    let yOffset = 10;
+                    let messageBoxY = y + yOffset; // Default position below the circle
+
+                    // Adjust yOffset and position based on region
+                    if (name === "North America") {
+                        yOffset = -70; // Offset above the circle
+                        messageBoxY = y + yOffset; // Set y position above the circle
+                    } else if (name === "Europe") {
+                        yOffset = 10; // Offset below the circle
+                        messageBoxY = y + yOffset; // Set y position below the circle
+                    } else if (name === "APAC") {
+                        yOffset = 10; // Offset below the circle
+                        messageBoxY = y + yOffset; // Set y position below the circle
+                    } else if (name === "LATAM") {
+                        yOffset = -70; // Offset above the circle
+                        messageBoxY = y + yOffset; // Set y position above the circle
+                    } else if (name === "MEA") {
+                        yOffset = 10; // Offset below the circle
+                        messageBoxY = y + yOffset; // Set y position below the circle
+                    }
+
+                    const messageBox = svg.append("foreignObject")
+                        .attr("class", "message-box")
+                        .attr("x", x + 5) // Offset to the right of the marker
+                        .attr("y", messageBoxY) // Vertical offset based on region
+                        .attr("width", 250)
+                        .attr("height", 100); // Reduced height
+
+                    const div = messageBox.append("xhtml:div")
+                        .style("background-color", "rgb(249 249 249 / 29%)")
+                        .style("border", "1px solid rgb(175 175 175)")
+                        .style("padding", "5px")
+                        .style("z-index", "10")
+                        .style("position", "absolute")
+                        .style("font-family", "'Poppins', sans-serif")
+                        .style("color", color)
+                        .style("font-weight", 600)
+                        .style("font-size", "12px")
+                        .style("margin", "0px"); // Remove margin
+
+                    div.append("p")
+                        .style("color", color)
+                        .style("margin", "0px") // Remove margin
+                        .text(name);
+
+                    const customText = selectedData[name] || '';
+                    div.append("p")
+                        .style("font-size", "11px") // Reduced font size
+                        .style("font-weight", "500") // Custom text font weight
+                        .style("color", "#222222") // Custom text color
+                        .style("margin", "0px") // Remove margin
+                        .text(customText);
+                });
+            });
+
+            document.getElementById("type-select").addEventListener("change", (event) => {
+                const value = event.target.value;
+                if (value === "region") {
+                    document.getElementById("region-select").style.display = "block";
+                    document.getElementById("country-search").style.display = "none";
+                    document.getElementById("country-select").style.display = "none";
+                } else {
+                    document.getElementById("region-select").style.display = "none";
+                    document.getElementById("country-search").style.display = "block";
+                    document.getElementById("country-select").style.display = "block";
+                }
+                updateCustomTextBoxes();
+            });
+
+            const updateCustomTextBoxes = () => {
+                const selectedType = document.getElementById("type-select").value;
+                const selectedOptions = selectedType === "region" ?
+                    Array.from(document.getElementById("region-select").selectedOptions) :
+                    Array.from(document.getElementById("country-select").selectedOptions);
+
+                const selectedNames = selectedOptions.map(option => option.value);
+                const customTextBoxContainer = document.getElementById("custom-text-boxes");
+
+                customTextBoxContainer.innerHTML = '';
+
+                selectedNames.forEach(name => {
+                    const div = document.createElement("div");
+                    const label = document.createElement("label");
+                    label.textContent = `${name} Custom Text: `;
+                    const textarea = document.createElement("textarea");
+                    textarea.id = `custom-text-${name}`;
+                    textarea.value = selectedData[name] || '';
+                    div.appendChild(label);
+                    div.appendChild(textarea);
+                    customTextBoxContainer.appendChild(div);
+                });
+            };
+
+            document.getElementById("region-select").addEventListener("change", updateCustomTextBoxes);
+            document.getElementById("country-select").addEventListener("change", updateCustomTextBoxes);
+
+            document.getElementById("heading-input").addEventListener("input", (event) => {
+                heading.text(event.target.value);
+            });
+
+            document.getElementById("download-btn").addEventListener("click", () => {
+                const svgElement = document.querySelector("#map svg");
+                const serializer = new XMLSerializer();
+                const svgString = serializer.serializeToString(svgElement);
+                const canvas = document.createElement("canvas");
+                canvas.width = 600;  // Fixed canvas width
+                canvas.height = 337; // Fixed canvas height
+                const ctx = canvas.getContext("2d");
+                const img = new Image();
+                img.onload = function() {
+                    ctx.fillStyle = "#fff"; // Ensure white background
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const imgURL = canvas.toDataURL("image/png");
+                    const a = document.createElement("a");
+                    a.href = imgURL;
+                    a.download = "map.png";
+                    a.click();
+                };
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+            });
+
+            document.getElementById("country-search").addEventListener("input", (event) => {
+                const searchTerm = event.target.value.toLowerCase();
+                const options = Array.from(document.getElementById("country-select").options);
+
+                options.forEach(option => {
+                    const text = option.textContent.toLowerCase();
+                    option.style.display = text.includes(searchTerm) ? 'block' : 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

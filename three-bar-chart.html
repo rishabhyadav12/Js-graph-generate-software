@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Chart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Poppins', sans-serif !important;
+        }
+        
+        .chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            /* width: 350px; */
+            height: 145px;
+            border-bottom:3px solid #c7c7c7;
+            margin: 20px 0 2px 0;
+            position: relative;
+        }
+
+        .bar {
+            width: 70px;
+            background: linear-gradient(45deg, #1c92bd, #03526e);
+            /* background: #1c92bd;
+            box-shadow: inset -1px 2px 20px 6px #003142; */
+            transition: height 0.5s;
+            position: relative;
+            min-height: 25px;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: 100%;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1d3870;
+        }
+
+        .year-label {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            margin: 5px;
+            padding: 7px;
+        }
+
+        .custom-unit {
+            display: none;
+            margin: 5px;
+        }
+
+        #bottom-source{
+            display: flex;
+            justify-content: space-between;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="capture" style="padding: 15px;width: 330px;height: 240px;">
+   
+        <div class="heading" id="heading" style="font-size: 17px;font-weight: 700;color: #03526e;padding: 4px 0;">Machine Vision Market</div>
+        <div style="color: green;font-weight: 600;">CAGR <span class="heading" id="cagr">7.4%</sapn></div>
+      
+            <div style="position: absolute;top: 50px;z-index: 9;rotate: 10deg;" id="arrowImage">
+                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="250px" height="180px" viewBox="0 0 87.455 47.174" enable-background="new 0 0 87.455 47.174" xml:space="preserve">
+<g>
+	<g>
+		<path fill="#80C88D" d="M82.905,7.509c0.016-0.109-0.079-0.199-0.178-0.169l-10.118,3.207c-0.135,0.04-0.15,0.24-0.022,0.296
+			l3.652,1.552c-0.275,0.293-0.567,0.603-0.876,0.931c-0.488,0.495-1.029,1.024-1.6,1.595c-0.144,0.143-0.289,0.286-0.436,0.435
+			c-0.152,0.14-0.306,0.284-0.464,0.43c-0.314,0.291-0.636,0.59-0.967,0.897c-0.654,0.628-1.384,1.228-2.129,1.88
+			c-0.187,0.162-0.376,0.325-0.567,0.49c-0.197,0.159-0.394,0.317-0.594,0.479c-0.4,0.322-0.807,0.651-1.221,0.986
+			c-0.206,0.17-0.42,0.332-0.636,0.491c-0.217,0.163-0.433,0.326-0.652,0.492c-0.442,0.324-0.881,0.672-1.342,0.994
+			c-0.461,0.324-0.93,0.649-1.404,0.981c-0.239,0.163-0.473,0.339-0.72,0.494c-0.245,0.158-0.49,0.319-0.739,0.479
+			c-0.497,0.318-0.993,0.653-1.506,0.968c-0.516,0.31-1.036,0.623-1.562,0.938c-2.117,1.228-4.343,2.434-6.675,3.486
+			c-2.327,1.062-4.73,2.057-7.186,2.878c-0.609,0.225-1.228,0.413-1.844,0.605c-0.618,0.189-1.231,0.399-1.853,0.561
+			c-0.621,0.173-1.24,0.345-1.856,0.517c-0.622,0.151-1.242,0.303-1.859,0.453c-0.617,0.161-1.236,0.277-1.852,0.411
+			c-0.616,0.124-1.229,0.267-1.842,0.366c-0.612,0.106-1.222,0.214-1.827,0.321c-0.606,0.087-1.209,0.175-1.807,0.262
+			c-0.299,0.041-0.597,0.09-0.894,0.125c-0.297,0.032-0.593,0.066-0.888,0.1c-0.588,0.063-1.172,0.14-1.751,0.188
+			c-1.158,0.091-2.291,0.201-3.396,0.241c-0.552,0.022-1.098,0.063-1.635,0.072c-0.537,0.013-1.065,0.022-1.585,0.035
+			c-0.26,0.003-0.519,0.011-0.774,0.012c-0.256-0.003-0.509-0.005-0.76-0.008c-0.502-0.004-0.995-0.009-1.478-0.014
+			c-0.964-0.027-1.888-0.071-2.768-0.105c-0.877-0.061-1.71-0.119-2.493-0.173c-0.781-0.077-1.513-0.149-2.188-0.215
+			c-0.676-0.067-1.292-0.161-1.853-0.229c-1.12-0.13-1.992-0.288-2.59-0.377c-0.597-0.094-0.916-0.144-0.916-0.144
+			s0.315,0.069,0.905,0.198c0.592,0.124,1.455,0.334,2.567,0.531c0.555,0.101,1.167,0.23,1.839,0.337
+			c0.673,0.108,1.4,0.223,2.178,0.346c0.782,0.102,1.613,0.209,2.489,0.321c0.88,0.088,1.806,0.188,2.773,0.271
+			c0.484,0.034,0.979,0.068,1.484,0.104c0.252,0.017,0.507,0.035,0.764,0.053c0.256,0.014,0.517,0.021,0.779,0.033
+			c0.524,0.021,1.058,0.042,1.6,0.061c0.542,0.021,1.092,0.015,1.651,0.022c1.117,0.025,2.266-0.017,3.441-0.04
+			c0.587-0.014,1.181-0.059,1.781-0.087c0.299-0.017,0.601-0.03,0.904-0.048c0.303-0.018,0.606-0.049,0.912-0.073
+			c0.611-0.052,1.226-0.104,1.847-0.158c0.619-0.072,1.244-0.146,1.871-0.219c0.63-0.065,1.258-0.171,1.892-0.264
+			c0.633-0.095,1.272-0.18,1.908-0.305c0.638-0.118,1.278-0.235,1.92-0.352c0.639-0.139,1.28-0.277,1.923-0.416
+			c0.645-0.131,1.282-0.307,1.924-0.464c0.642-0.161,1.285-0.318,1.921-0.51c2.561-0.696,5.085-1.577,7.542-2.534
+			c2.462-0.947,4.829-2.063,7.092-3.211c0.562-0.295,1.12-0.59,1.672-0.882c0.55-0.295,1.084-0.615,1.618-0.916
+			c0.266-0.152,0.532-0.304,0.795-0.454c0.265-0.148,0.518-0.317,0.776-0.473c0.511-0.317,1.018-0.632,1.516-0.939
+			c0.499-0.312,0.975-0.646,1.452-0.961c0.239-0.157,0.475-0.316,0.708-0.473c0.235-0.155,0.468-0.313,0.69-0.478
+			c0.452-0.324,0.895-0.645,1.331-0.959c0.218-0.157,0.436-0.313,0.648-0.467c0.209-0.161,0.416-0.321,0.621-0.479
+			c0.814-0.639,1.614-1.229,2.333-1.846c0.363-0.303,0.719-0.6,1.063-0.886c0.172-0.144,0.343-0.285,0.511-0.425
+			c0.163-0.146,0.323-0.288,0.48-0.43c0.633-0.565,1.228-1.088,1.771-1.585c0.493-0.471,0.946-0.902,1.361-1.302l2.02,3.465
+			c0.066,0.13,0.25,0.09,0.271-0.06L82.905,7.509z"/>
+	</g>
+</g>
+</svg>
+            </div>
+
+
+
+    <div class="chart" id="chart">
+        <div class="bar" id="bar1"><span class="bar-label" id="label1"></span><span class="year-label" id="year1">2024</span></div>
+        <div class="bar" id="bar2"><span class="bar-label" id="label2"></span><span class="year-label" id="year2">2025</span></div>
+        <div class="bar" id="bar3"><span class="bar-label" id="label3"></span><span class="year-label" id="year3">2030</span></div>
+    </div>
+
+<form>
+
+<div style="display: flex;justify-content:space-between;" id="bottom-source">
+                    <p id="risi" style="font-size: 11px;font-weight: 600;color: #5c73a0;text-align: left;margin-top: 7px;margin-right: 9px;display: inline;">Market Size in USD</p>
+                    <p style="font-size: 11px;font-weight: 600;color: #5c73a0;text-align: end;margin-top: 7px;margin-right: 9px;display: inline;">Source: P&amp;S Intelligence</p> 
+                </div>
+</div>
+
+
+
+
+
+<div style="display: flex;justify-content:flex-start;gap: 60px;width: 730px;margin-top: 40px">
+    <div style="padding-top: 12px;" >
+        <h4 style="text-align: left;">Enter the Report Title & CAGR</h4>
+        <div style="display: flex;">
+            <input type="text" id="headingInput" placeholder="Enter heading" required style="width: 210px;
+            height: 25px;">
+        <input type="text" id="cagrInput" placeholder="Enter CAGR" required>
+        </div>
+    </div>
+    </div>
+    
+    
+    <div style="display: flex;justify-content: space-between;gap: 60px;">
+    
+    <div style="margin-top: 10px;">
+            <h4>Enter the Year</h4>
+        <div style="display: flex; flex-direction: column;"> 
+            <input type="text" id="yearInput1" placeholder="Year for Bar 1 (e.g., 2024)" required>
+           
+            <input type="text" id="yearInput2" placeholder="Year for Bar 2 (e.g., 2025)" required>
+           
+            <input type="text" id="yearInput3" placeholder="Year for Bar 3 (e.g., 2030)" required>
+        </div>
+        </div>    
+    
+    <div style="margin-top: 10px;" >
+        <h4>Enter the Value for Bar</h4>
+    <div style="display: flex;flex-direction: column;"> 
+        <input type="number" id="value1" placeholder="Value for Bar 1" required>
+        
+        <input type="number" id="value2" placeholder="Value for Bar 2" required>
+        
+        <input type="number" id="value3" placeholder="Value for Bar 3" required>
+    </div>
+    </div>
+    
+    
+    <div style="padding-top:10px;">
+        <h4 style="text-align: left;">Choose Option</h4>
+        <div style="display: flex;">
+    
+            <select id="unit" onchange="toggleCustomUnit()" required>
+                <option value="Bn">Bn</option>
+                <option value="Mn">Mn</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="text" id="customUnit" class="custom-unit" placeholder="Enter custom unit" required>
+        
+            <select id="imageToggle" onchange="toggleImage()">
+                <option value="show">Show Image</option>
+                <option value="hide">Hide Image</option>
+            </select>
+        </div>
+    </div>
+    </div>
+    
+    <style>
+    
+    h4{
+        color: #383838;
+    }   
+        button{padding: 10px 30px;
+        background: green;
+        color: #fff;
+        outline: none;
+        border: none;
+        cursor: pointer;
+    margin-top: 15px;}
+    </style>
+    
+   
+   
+   
+    <button onclick="updateChart()" style="background: rgb(0, 119, 255);margin-top: 20px;">Update Chart</button>
+    
+<div>
+    <h3>Choose Option to Download</h3>
+<div style="display: flex;gap: 15px;">   
+    <button onclick="downloadChart('webp')">Download as WebP</button>
+    <button onclick="downloadChart('png')">Download as PNG</button>
+    <button onclick="downloadChart('jpeg')">Download as JPG</button>
+</div> 
+
+</form>
+
+</div>
+
+
+    <script>
+       function toggleCustomUnit() {
+            const unitSelect = document.getElementById('unit');
+            const customUnitInput = document.getElementById('customUnit');
+            const risiParagraph = document.getElementById('risi');
+            const bottomClass = document.getElementById('bottom-source');
+
+if (unitSelect.value === 'other') {
+    customUnitInput.style.display = 'inline';
+    risiParagraph.style.display = 'none';
+    bottomClass.style.flexDirection = 'flex-end';
+} else {
+    customUnitInput.style.display = 'none';
+    risiParagraph.style.display = 'block';
+    bottomClass.style.flexDirection = 'space-between';
+}
+}
+
+
+function toggleImage() {
+            const imageToggle = document.getElementById('imageToggle');
+            const arrowImage = document.getElementById('arrowImage');
+
+            if (imageToggle.value === 'hide') {
+                arrowImage.style.display = 'none';
+            } else {
+                arrowImage.style.display = 'block';
+            }
+        }
+
+        function updateChart() {
+            // Get the input values and selected unit
+            const value1 = parseFloat(document.getElementById('value1').value) || 0;
+            const value2 = parseFloat(document.getElementById('value2').value) || 0;
+            const value3 = parseFloat(document.getElementById('value3').value) || 0;
+            const unit = document.getElementById('unit').value;
+            const customUnit = document.getElementById('customUnit').value;
+
+            // Get the year inputs
+            // const heading = document.getElementById('heading').value;
+            const year1 = document.getElementById('yearInput1').value || '2024';
+            const year2 = document.getElementById('yearInput2').value || '2025';
+            const year3 = document.getElementById('yearInput3').value || '2030';
+
+            // Calculate the maximum value to normalize bar heights
+            const maxValue = Math.max(value1, value2, value3, 1); // Avoid division by zero
+
+            // Set the heading
+            document.getElementById('heading').innerText = document.getElementById('headingInput').value;
+
+            document.getElementById('cagr').innerText = document.getElementById('cagrInput').value;
+
+            // Set the heights of the bars
+            document.getElementById('bar1').style.height = (value1 / maxValue) * 100 + '%';
+            document.getElementById('bar2').style.height = (value2 / maxValue) * 100 + '%';
+            document.getElementById('bar3').style.height = (value3 / maxValue) * 100 + '%';
+
+            // Set the labels with formatted values
+            document.getElementById('label1').innerText = formatValue(value1, unit, customUnit);
+            document.getElementById('label2').innerText = formatValue(value2, unit, customUnit);
+            document.getElementById('label3').innerText = formatValue(value3, unit, customUnit);
+
+            // Set the year labels
+            document.getElementById('year1').innerText = year1;
+            document.getElementById('year2').innerText = year2;
+            document.getElementById('year3').innerText = year3;
+        }
+
+        function formatValue(value, unit, customUnit) {
+            if (unit === 'other') {
+                return value + ' ' + customUnit;
+            } else {
+                return value + ' ' + unit;
+            }
+        }
+
+        function downloadChart(format) {
+            const chart = document.getElementById('capture');
+            html2canvas(chart).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL(`image/${format}`);
+                link.download = `chart.${format}`;
+                link.click();
+            });
+        }
+    </script>
+    
+</body>
+</html>

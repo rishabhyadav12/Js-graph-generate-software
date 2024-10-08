@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Bar Graph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif !important;
+        }
+
+        h1{
+            font-size: 18px;
+            margin-bottom: 0;
+            font-family: 'Poppins', sans-serif !important;
+            color: #14509E !important;
+            font-weight: 600;
+        }
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            /* background: antiquewhite; */
+            padding: 20px;
+        }
+
+        .chart-container {
+            margin-bottom: 20px;
+            width: 600px;
+            height: 377px;
+
+        }
+
+        canvas {
+            border-bottom: 4px solid #ccc;
+        }
+
+        .legend {
+            text-align: left;
+            margin-top: 10px;
+            display: flex;
+            gap: 26px;
+            flex-wrap: wrap;
+            margin-left: 50px;
+        }
+
+        .legend-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .legend-item .color-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .input-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .input-container input {
+            margin-bottom: 5px;
+        }
+
+        .plus {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .download-buttons {
+            margin-top: 20px;
+        }
+
+        .download-buttons button {
+            margin: 5px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-container" id="downloadImg">
+            <h1 id="heading"></h1>
+            <canvas id="barGraph" width="450" height="250"></canvas>
+            <div class="legend" id="legendContainer">
+                <!-- Legend items will be added dynamically here -->
+            </div> 
+            <div style="display: flex;justify-content:flex-end;width: 100%;margin-top: 5px;" id="bottom-source">
+                <p style="font-size: 11px;font-weight: 600;color: #ffffff;text-align: end;margin-top: 7px;margin-right: 9px;display: inline;">Source: P&amp;S Intelligence</p>
+                <p style="font-size: 11px;font-weight: 600;color: #5c73a0;text-align: end;margin-top: 7px;margin-right: 9px;display: inline;">Source: P&amp;S Intelligence</p>
+                </div> 
+        </div>
+        <div id="inputContainer">
+            <div class="input-container">
+                <input type="text" placeholder="Enter label..." required>
+                <input type="number" placeholder="Enter value..." required>
+                <input type="text" placeholder="Custom text..." required>
+            </div>
+            <div class="plus" onclick="addInputBox()">+</div>
+        </div>
+        <div class="input-container" id="headingContainer">
+            <label for="headingInput">Enter Heading:</label>
+            <input type="text" id="headingInput" placeholder="Enter heading..." required>
+        </div>
+        <button onclick="updateChart()">Submit</button>
+        
+        <div class="download-buttons">
+            <!-- <button onclick="downloadChart('webp')">Download as WebP</button> -->
+             <button onclick="downloadChart('png')">Download as PNG</button>
+           <!-- <button onclick="downloadChart('jpg')">Download as JPG</button> -->
+        </div>
+    </div>
+
+    <script>
+        var data = [];
+        var labels = [];
+        var customTexts = [];
+        var colors = ['#20A7AD', '#1355A0', '#99ff99', '#ffcc99', '#c2c2f0', '#ffb3e6', '#ff6666', '#c2f0c2'];
+
+        function addInputBox() {
+            if (data.length >= 8) return; // Limit to maximum 8 input boxes
+            var inputContainer = document.getElementById('inputContainer');
+            var newInputContainer = document.createElement('div');
+            newInputContainer.classList.add('input-container');
+            newInputContainer.innerHTML = `
+                <input type="text" placeholder="Enter label..." required>
+                <input type="number" placeholder="Enter value..." required>
+                <input type="text" placeholder="Custom text..." required>
+            `;
+            inputContainer.insertBefore(newInputContainer, document.querySelector('.plus'));
+        }
+
+        function updateChart() {
+            data = [];
+            labels = [];
+            customTexts = [];
+            var labelInputs = document.querySelectorAll('#inputContainer input:nth-child(1)');
+            var dataInputs = document.querySelectorAll('#inputContainer input[type="number"]');
+            var customInputs = document.querySelectorAll('#inputContainer input:nth-child(3)');
+
+            labelInputs.forEach(function(input) {
+                labels.push(input.value);
+            });
+
+            dataInputs.forEach(function(input) {
+                data.push(parseInt(input.value) || 0);
+            });
+
+            customInputs.forEach(function(input) {
+                customTexts.push(input.value);
+            });
+
+            var canvas = document.getElementById('barGraph');
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            var barWidth = 80;
+            var spacing = 160;
+            var maxValue = Math.max(...data);
+            var chartHeight = canvas.height - 50;
+            var chartWidth = (barWidth + spacing) * data.length;
+            var startX = (canvas.width - chartWidth) + 95;
+            var startY = canvas.height;
+
+            ctx.fillStyle = '#333';
+
+            // Draw bars and labels
+            data.forEach(function(value, index) {
+                var barHeight = (value / maxValue) * chartHeight;
+                var x = startX + index * (barWidth + spacing);
+                var y = startY - barHeight;
+                var color = colors[index % colors.length];
+
+                // Draw bar
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Draw label
+                // ctx.fillStyle = '#333';
+                // ctx.fillText(labels[index], x, canvas.height - 10);
+
+                // Draw custom text
+                // ctx.fillText(customTexts[index], x, y - 5);
+
+                // Update legend
+                var legendItem = document.createElement('div');
+                legendItem.classList.add('legend-item');
+
+                var colorCircle = document.createElement('div');
+                colorCircle.classList.add('color-circle');
+                colorCircle.style.backgroundColor = color;
+                legendItem.appendChild(colorCircle);
+
+                // legendItem.innerHTML += `<span>${labels[index]}<b>:</b> ${customTexts[index]}</span>`;
+                // document.getElementById('legendContainer').appendChild(legendItem);
+          
+
+            legendItem.innerHTML += `<span>${labels[index]}`;
+                if (customTexts[index]) {
+                    legendItem.innerHTML += ` <b>:</b>&nbsp; ${customTexts[index]}`;
+                }
+                legendItem.innerHTML += `</span>`;
+                
+                document.getElementById('legendContainer').appendChild(legendItem);
+                // lastAngle += angle;
+            });
+
+            var headingInput = document.getElementById('headingInput').value;
+            document.getElementById('heading').innerText = headingInput ? headingInput : '';
+        }
+
+        // function downloadChart(format) {
+        //     var canvas = document.getElementById('barGraph');
+        //     var link = document.createElement('a');
+        //     var headingInput = document.getElementById('headingInput').value;
+        //     var fileName = headingInput ? headingInput : 'bar_graph';
+        //     link.download = `${fileName}.${format}`;
+
+        //     if (canvas) {
+        //         canvas.toBlob(function(blob) {
+        //             var url = URL.createObjectURL(blob);
+        //             link.href = url;
+        //             link.click();
+        //             URL.revokeObjectURL(url);
+        //         }, `image/${format}`);
+        //     } else {
+        //         console.error('Canvas element not found.');
+        //     }
+        // }
+        function downloadChart(format) {
+            const chart = document.getElementById('downloadImg');
+			const chartName = document.getElementById('headingInput').value;
+			
+            html2canvas(chart).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL(`image/${format}`);
+                link.download = chartName +`.${format}`;
+                link.click();
+            });
+        }
+    </script>
+    
+</body>
+</html>
